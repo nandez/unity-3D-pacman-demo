@@ -17,7 +17,7 @@ public class PathController
         while (openList.Count > 0)
         {
             // Buscamos el waypoint con menor F (coste) en la lista de abiertos
-            var currentWaypoint = openList.OrderBy(t => t.F).First();
+            var currentWaypoint = openList.OrderBy(t => t.f).First();
 
             openList.Remove(currentWaypoint);
             closedList.Add(currentWaypoint);
@@ -27,15 +27,15 @@ public class PathController
                 return GetPath(start, end);
 
             // Iteramos sobre los waypoints adyacentes al nodo actual.
-            foreach (var neighbor in currentWaypoint.Neighbors)
+            foreach (var neighbor in currentWaypoint.neighbors)
             {
-                if (neighbor.IsBlocked || closedList.Contains(neighbor))
+                if (neighbor.isBlocked || closedList.Contains(neighbor))
                     continue;
 
                 // Calculamos los valores de G y H para el nodo adyacente.
-                neighbor.G = CalculateManhattanDistance(start, neighbor);
-                neighbor.H = CalculateManhattanDistance(end, neighbor);
-                neighbor.PreviousWaypoint = currentWaypoint;
+                neighbor.g = CalculateManhattanDistance(start, neighbor);
+                neighbor.h = CalculateManhattanDistance(end, neighbor);
+                neighbor.previousWaypoint = currentWaypoint;
 
                 if (!openList.Contains(neighbor))
                     openList.Add(neighbor);
@@ -51,7 +51,7 @@ public class PathController
     /// </summary>
     protected int CalculateManhattanDistance(Waypoint a, Waypoint b)
     {
-        return Mathf.Abs(a.GridPosition.x - b.GridPosition.x) + Mathf.Abs(a.GridPosition.y - b.GridPosition.y);
+        return Mathf.Abs(a.gridPosition.x - b.gridPosition.x) + Mathf.Abs(a.gridPosition.y - b.gridPosition.y);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public class PathController
         while (currentWaypoint != start)
         {
             path.Add(currentWaypoint);
-            currentWaypoint = currentWaypoint.PreviousWaypoint;
+            currentWaypoint = currentWaypoint.previousWaypoint;
         }
 
         path.Reverse();
