@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 
     public static GameState gameState = GameState.Idle;
 
-
+    public bool isPowerPelletActive = false;
 
     void Awake()
     {

@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 movingDirection = Vector3.zero;
     private Vector3 inputDir = Vector3.zero;
 
+    public Waypoint GetWaypoint() => waypoint;
+    public float GetMoveSpeed() => moveSpeed;
+
     //private Waypoint lastWaypoint;
     //private Vector3 inputDirection = Vector3.zero;
     //private Vector3 lastDirection = Vector3.zero;

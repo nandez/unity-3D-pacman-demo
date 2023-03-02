@@ -9,6 +9,8 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance { get { return _instance; } }
 
     public List<Waypoint> waypoints = new List<Waypoint>();
+    public List<Waypoint> corners = new List<Waypoint>();
+
     public int waypointStep = 2;
 
     void Awake()
@@ -64,11 +66,26 @@ public class MapManager : MonoBehaviour
             if (waypointDictionary.ContainsKey(neighbor))
                 wp.neighbors.Add(waypointDictionary[neighbor]);
         }
+
+        // Obtenemos los valores minimo y maximo de la grilla para calcular los waypoints de las esquinas.
+        var minX = waypoints.Min(t => t.gridPosition.x) + waypointStep;
+        var maxX = waypoints.Max(t => t.gridPosition.x) - waypointStep;
+        var minY = waypoints.Min(t => t.gridPosition.y) + waypointStep;
+        var maxY = waypoints.Max(t => t.gridPosition.y) - waypointStep;
+
+        corners.Add(waypointDictionary[new Vector2Int(minX, minY)]);
+        corners.Add(waypointDictionary[new Vector2Int(minX, maxY)]);
+        corners.Add(waypointDictionary[new Vector2Int(maxX, minY)]);
+        corners.Add(waypointDictionary[new Vector2Int(maxX, maxY)]);
     }
 
-    // Update is called once per frame
-    void Update()
+    public Waypoint GetRandomWaypoint()
     {
+        return waypoints[Random.Range(0, waypoints.Count)];
+    }
 
+    public Waypoint GetRandomCornerWaypoint()
+    {
+        return corners[Random.Range(0, corners.Count)];
     }
 }
