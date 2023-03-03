@@ -17,6 +17,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] protected float chaseRange = 10f;
     [SerializeField] Waypoint homeEntranceWp;
     [SerializeField] Transform homePlace;
+    [SerializeField] float homeWaitTime = 2f;
     [SerializeField] Material frightenedMaterial;
     [SerializeField] protected float powerPelletFadeWarningFlashSpeed = 5f;
     [SerializeField] protected float powerPelletFadeWarningFlashDuration = 1f;
@@ -39,6 +40,7 @@ public class EnemyController : MonoBehaviour
     private Material defaultMaterial;
     private EnemyState currentState = EnemyState.Scatter;
     private Coroutine changeColorOnPowerPelletFadeWarningCoroutine;
+    private bool waitingInHome = false;
 
     public delegate void EnemyEatenEvent(int points);
     public static event EnemyEatenEvent OnEnemyEaten;
@@ -82,8 +84,9 @@ public class EnemyController : MonoBehaviour
 
     protected void CheckForPlayerToChase()
     {
-        // Cuando el enemigo fue comido por el jugador o se encuentra huyendo, no realizamos ninguna acción.
-        if (currentState == EnemyState.Eaten || currentState == EnemyState.Frightened)
+        // Cuando el enemigo se encuentra huyendo, esta en estado eaten o fue
+        // recientemente comido y está esperando para salir de la casa, no realizamos ninguna acción.
+        if (currentState == EnemyState.Eaten || currentState == EnemyState.Frightened || waitingInHome)
             return;
 
         // Finalmente, verificamos la distancia entre el enemigo y el jugador, y actualizamos el estado en consecuencia.
@@ -121,6 +124,7 @@ public class EnemyController : MonoBehaviour
             {
                 // Si la distancia es mayor al umbral, nos movemos hacia el waypoint.
                 var wpDirection = (wpProjection - transform.position).normalized;
+                transform.rotation = Quaternion.LookRotation(wpDirection);
                 transform.position += wpDirection.normalized * speed * Time.deltaTime;
             }
         }
@@ -128,9 +132,6 @@ public class EnemyController : MonoBehaviour
 
     protected void RunEatenBehavior()
     {
-        // Emitimos para notificar que el enemigo fue comido.
-        OnEnemyEaten?.Invoke(points);
-
         // TODO: agregar la animación..
 
         // Seteamos el waypoint de destino
@@ -143,16 +144,20 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            // Si ya llegó al waypoint de entrada de la casa, nos movemos hacia el punto de origen.
-            if (transform.position != homePlace.position)
+            // Verificamos la distancia entre el enemigo y el punto de origen.
+            var distanceToHomePosition = Vector3.Distance(transform.position, homePlace.position);
+            if (distanceToHomePosition >= 0.1f)
             {
-                var distanceToHomePosition = Vector3.Distance(transform.position, homePlace.position);
-                if (distanceToHomePosition >= 0.1f)
-                {
-                    var dir = homePlace.position - transform.position;
-                    transform.rotation = Quaternion.LookRotation(dir);
-                    transform.position += dir.normalized * frightenedSpeed * Time.deltaTime;
-                }
+                var dir = homePlace.position - transform.position;
+                transform.rotation = Quaternion.LookRotation(dir);
+                transform.position += dir.normalized * frightenedSpeed * Time.deltaTime;
+            }
+            else
+            {
+                // Si llegó al punto de origen, seteamos el estado a Scatter y
+                // ponemos en true la variable waitingInHome.
+                waitingInHome = true;
+                ChangeState(EnemyState.Scatter);
             }
         }
     }
@@ -195,30 +200,55 @@ public class EnemyController : MonoBehaviour
         // del estado frightened o eaten a scatter.
         GetComponent<Renderer>().material = defaultMaterial;
 
-        Vector3 targetWaypointProjection;
-        float targetWaypointDistance;
-        bool acquireWaypoint = true;
-
-        // En este estado, el enemigo se mueve hacia un waypoint aleatorio del mapa.
-        // Verificamos la distancia entre el enemigo y el waypoint, proyectando el waypoint sobre el plano horizontal en la misma altura que el enemigo.
-        // Si la distancia es menor al umbral, volvemos a obtener un waypoint aleatorio.
-        do
+        // Si el enemigo no está esperando en la casa, se mueve hacia un waypoint aleatorio del mapa.
+        if (!waitingInHome)
         {
-            if (targetWaypoint == null)
-                targetWaypoint = MapManager.Instance.GetRandomWaypoint();
+            Vector3 targetWaypointProjection;
+            float targetWaypointDistance;
+            bool acquireWaypoint = true;
 
-            targetWaypointProjection = new Vector3(targetWaypoint.transform.position.x, transform.position.y, targetWaypoint.transform.position.z);
-            targetWaypointDistance = Vector3.Distance(transform.position, targetWaypointProjection);
+            // En este estado, el enemigo se mueve hacia un waypoint aleatorio del mapa.
+            // Verificamos la distancia entre el enemigo y el waypoint, proyectando el waypoint sobre el plano horizontal en la misma altura que el enemigo.
+            // Si la distancia es menor al umbral, volvemos a obtener un waypoint aleatorio.
+            do
+            {
+                if (targetWaypoint == null)
+                    targetWaypoint = MapManager.Instance.GetRandomWaypoint();
 
-            // Verificamos si el waypoint es válido, es decir, si la distancia entre el enemigo y el waypoint es mayor al umbral.
-            // de no ser así, volvemos a obtener un waypoint aleatorio y repetir el proceso de validación.
-            acquireWaypoint = targetWaypointDistance <= targetWaypoint.distanceThreshold;
-            if (acquireWaypoint)
-                targetWaypoint = MapManager.Instance.GetRandomWaypoint();
+                targetWaypointProjection = new Vector3(targetWaypoint.transform.position.x, transform.position.y, targetWaypoint.transform.position.z);
+                targetWaypointDistance = Vector3.Distance(transform.position, targetWaypointProjection);
 
-        } while (acquireWaypoint);
+                // Verificamos si el waypoint es válido, es decir, si la distancia entre el enemigo y el waypoint es mayor al umbral.
+                // de no ser así, volvemos a obtener un waypoint aleatorio y repetir el proceso de validación.
+                acquireWaypoint = targetWaypointDistance <= targetWaypoint.distanceThreshold;
+                if (acquireWaypoint)
+                    targetWaypoint = MapManager.Instance.GetRandomWaypoint();
 
-        HandleMovement(scatterSpeed);
+            } while (acquireWaypoint);
+
+            HandleMovement(scatterSpeed);
+        }
+        else
+        {
+            // En este caso, el enemigo fue recientemente comido y está esperando en la casa para volver a salir.
+            // por lo que lo movemos hacia el waypoint de salida de la casa y luego seteamos la variable waitingInHome en false.
+            var homeEntranceWpProjection = new Vector3(homeEntranceWp.transform.position.x, transform.position.y, homeEntranceWp.transform.position.z);
+            var homeEntranceWpDistance = Vector3.Distance(transform.position, homeEntranceWpProjection);
+            if (homeEntranceWpDistance >= 0.1f)
+            {
+                // Mientras el enemigo no haya llegado al waypoint de salida de la casa, lo movemos hacia el.
+                var dir = homeEntranceWpProjection - transform.position;
+                transform.rotation = Quaternion.LookRotation(dir);
+                transform.position += dir.normalized * frightenedSpeed * Time.deltaTime;
+            }
+            else
+            {
+                // Si terminó de salir de la casa, seteamos el waypoint actual para habilitar los calculos
+                // del pathfinding e indicamos que ya esta listo para salir.
+                currentWaypoint = homeEntranceWp;
+                waitingInHome = false;
+            }
+        }
     }
 
     protected void RunChaseBehavior()
@@ -317,7 +347,11 @@ public class EnemyController : MonoBehaviour
 
             // Si el enemigo está huyendo, lo comemos.
             if (currentState == EnemyState.Frightened)
+            {
+                // Emitimos para notificar que el enemigo fue comido.
+                OnEnemyEaten?.Invoke(points);
                 ChangeState(EnemyState.Eaten);
+            }
         }
     }
 

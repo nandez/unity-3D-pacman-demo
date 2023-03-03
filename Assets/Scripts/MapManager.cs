@@ -16,6 +16,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] protected int waypointStep = 2;
     public int WaypointStep { get { return waypointStep; } }
 
+
     void Awake()
     {
         if (_instance != null && _instance != this)
@@ -30,6 +31,9 @@ public class MapManager : MonoBehaviour
 
     void Start()
     {
+        // Obtenemos la altura del jugador para instanciar los pellets en la altura correcta.
+        var playerHeight = FindObjectOfType<PlayerController>().transform.position.y;
+
         // Iteramos sobre todos los waypoints del mapa y calculamos su posición en la grilla.
         // Esto podemos hacerlo dado que sabemos de antemano, que las posiciones de los waypoints
         // en el mundo son las mismas que las posiciones en la grilla.
@@ -43,7 +47,8 @@ public class MapManager : MonoBehaviour
             // ej: un pellet, power pellet, etc.
             if (wp.collectiblePrefab != null)
             {
-                var collectible = Instantiate(wp.collectiblePrefab, wp.transform.position, Quaternion.identity);
+                var wpProjection = new Vector3(wp.transform.position.x, playerHeight, wp.transform.position.z);
+                var collectible = Instantiate(wp.collectiblePrefab, wpProjection, Quaternion.identity);
                 collectible.transform.parent = pelletContainer.transform;
                 pellets.Add(collectible.GetComponent<Pellet>());
             }
