@@ -10,8 +10,11 @@ public class MapManager : MonoBehaviour
 
     public List<Waypoint> waypoints = new List<Waypoint>();
     public List<Waypoint> corners = new List<Waypoint>();
+    public List<Pellet> pellets = new List<Pellet>();
+    [SerializeField] protected GameObject pelletContainer;
 
-    public int waypointStep = 2;
+    [SerializeField] protected int waypointStep = 2;
+    public int WaypointStep { get { return waypointStep; } }
 
     void Awake()
     {
@@ -35,6 +38,15 @@ public class MapManager : MonoBehaviour
         {
             wp.gridPosition = new Vector2Int(Mathf.RoundToInt(wp.transform.position.x), Mathf.RoundToInt(wp.transform.position.z));
             waypoints.Add(wp);
+
+            // Verificamos si el waypoint tiene un collectible asociado y lo instanciamos.
+            // ej: un pellet, power pellet, etc.
+            if (wp.collectiblePrefab != null)
+            {
+                var collectible = Instantiate(wp.collectiblePrefab, wp.transform.position, Quaternion.identity);
+                collectible.transform.parent = pelletContainer.transform;
+                pellets.Add(collectible.GetComponent<Pellet>());
+            }
         }
 
         // Iteramos sobre todos los waypoints del mapa y calculamos sus waypoints adyacentes
@@ -47,31 +59,31 @@ public class MapManager : MonoBehaviour
         foreach (var wp in waypoints)
         {
             // Calculamos el waypoint adyacente en la dirección Norte
-            var neighbor = new Vector2Int(wp.gridPosition.x, wp.gridPosition.y + waypointStep);
+            var neighbor = new Vector2Int(wp.gridPosition.x, wp.gridPosition.y + WaypointStep);
             if (waypointDictionary.ContainsKey(neighbor))
                 wp.neighbors.Add(waypointDictionary[neighbor]);
 
             // Calculamos el waypoint adyacente en la dirección Sur
-            neighbor = new Vector2Int(wp.gridPosition.x, wp.gridPosition.y - waypointStep);
+            neighbor = new Vector2Int(wp.gridPosition.x, wp.gridPosition.y - WaypointStep);
             if (waypointDictionary.ContainsKey(neighbor))
                 wp.neighbors.Add(waypointDictionary[neighbor]);
 
             // Calculamos el waypoint adyacente en la dirección Este
-            neighbor = new Vector2Int(wp.gridPosition.x + waypointStep, wp.gridPosition.y);
+            neighbor = new Vector2Int(wp.gridPosition.x + WaypointStep, wp.gridPosition.y);
             if (waypointDictionary.ContainsKey(neighbor))
                 wp.neighbors.Add(waypointDictionary[neighbor]);
 
             // Calculamos el waypoint adyacente en la dirección Oeste
-            neighbor = new Vector2Int(wp.gridPosition.x - waypointStep, wp.gridPosition.y);
+            neighbor = new Vector2Int(wp.gridPosition.x - WaypointStep, wp.gridPosition.y);
             if (waypointDictionary.ContainsKey(neighbor))
                 wp.neighbors.Add(waypointDictionary[neighbor]);
         }
 
         // Obtenemos los valores minimo y maximo de la grilla para calcular los waypoints de las esquinas.
-        var minX = waypoints.Min(t => t.gridPosition.x) + waypointStep;
-        var maxX = waypoints.Max(t => t.gridPosition.x) - waypointStep;
-        var minY = waypoints.Min(t => t.gridPosition.y) + waypointStep;
-        var maxY = waypoints.Max(t => t.gridPosition.y) - waypointStep;
+        var minX = waypoints.Min(t => t.gridPosition.x) + WaypointStep;
+        var maxX = waypoints.Max(t => t.gridPosition.x) - WaypointStep;
+        var minY = waypoints.Min(t => t.gridPosition.y) + WaypointStep;
+        var maxY = waypoints.Max(t => t.gridPosition.y) - WaypointStep;
 
         corners.Add(waypointDictionary[new Vector2Int(minX, minY)]);
         corners.Add(waypointDictionary[new Vector2Int(minX, maxY)]);

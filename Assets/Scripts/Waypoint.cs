@@ -5,6 +5,7 @@ using System.Linq;
 
 public class Waypoint : MonoBehaviour
 {
+    public GameObject collectiblePrefab;
     public Vector2Int gridPosition;
     public bool isBlocked;
     public List<Waypoint> neighbors = new List<Waypoint>();
@@ -36,6 +37,6 @@ public class Waypoint : MonoBehaviour
     public Waypoint GetNeighborByDirection(Vector3 direction)
     {
         var gridDirection = new Vector2Int(Mathf.RoundToInt(direction.x), Mathf.RoundToInt(direction.z));
-        return neighbors.FirstOrDefault(t => t.gridPosition == gridPosition + gridDirection * MapManager.Instance.waypointStep);
+        return neighbors.FirstOrDefault(t => t.gridPosition == gridPosition + gridDirection * MapManager.Instance.WaypointStep);
     }
 }

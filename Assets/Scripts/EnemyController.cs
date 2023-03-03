@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +6,9 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+    [Header("Enemy Settings")]
+    [SerializeField] protected int points = 200;
+
     [Header("Movement Settings")]
     [SerializeField] protected Waypoint currentWaypoint;
 
@@ -14,13 +18,13 @@ public class EnemyController : MonoBehaviour
     [SerializeField] Waypoint homeEntranceWp;
     [SerializeField] Transform homePlace;
     [SerializeField] Material frightenedMaterial;
+    [SerializeField] protected float powerPelletFadeWarningFlashSpeed = 5f;
+    [SerializeField] protected float powerPelletFadeWarningFlashDuration = 1f;
 
 
     [Header("Debug Settings")]
     [SerializeField] protected bool renderMovementPath = false;
     [SerializeField] protected bool renderChaseRangeGizmo = false;
-    [SerializeField] protected KeyCode keyToDebugStateChange = KeyCode.Space;
-    [SerializeField] protected EnemyState stateToSwitchTo = EnemyState.Scatter;
 
     // Velocidades de movimiento para cada estado.
     private float chaseSpeed;
@@ -33,11 +37,15 @@ public class EnemyController : MonoBehaviour
     private List<Waypoint> wpPath = new List<Waypoint>();
     private Waypoint targetWaypoint;
     private Material defaultMaterial;
+    private EnemyState currentState = EnemyState.Scatter;
+    private Coroutine changeColorOnPowerPelletFadeWarningCoroutine;
 
-    [SerializeField] EnemyState state = EnemyState.Scatter;
+    public delegate void EnemyEatenEvent(int points);
+    public static event EnemyEatenEvent OnEnemyEaten;
 
     void Start()
     {
+        // Creamos el path controller y obtenemos una referencia al player controller.
         pathCtrl = new PathController();
         playerCtrl = FindObjectOfType<PlayerController>();
 
@@ -47,43 +55,41 @@ public class EnemyController : MonoBehaviour
         // Dado que la velocidad del enemigo para cada estado
         // depende de la velocidad del jugador, la inicializamos en el Start.
         InitializeMovementSpeeds();
+
+        GameManager.Instance.OnPowerPelletStatusChange += OnPowerPelletStatusChange;
+        GameManager.Instance.OnPowerPelletFadeWarning += OnPowerPelletFadeWarning;
     }
+
 
 
     void Update()
     {
-        if (Input.GetKeyDown(keyToDebugStateChange))
-            ChangeState(stateToSwitchTo);
-
-        // TODO: investigar que posibilidad hay de utilizar una state machine
-        // para el comportamiento de los enemigos, separando cada behavior en un estado diferente.
-
         // Verificamos el estado del enemigo.
-        EnemyShouldChasePlayer();
+        CheckForPlayerToChase();
 
-        if (state == EnemyState.Eaten)
-            RunEatenBehavior();
+        if (currentState == EnemyState.Chase)
+            RunChaseBehavior();
 
-        else if (state == EnemyState.Frightened)
-            RunFrightenedBehavior();
-
-        else if (state == EnemyState.Scatter)
+        else if (currentState == EnemyState.Scatter)
             RunScatterBehavior();
 
-        else if (state == EnemyState.Chase)
-            RunChaseBehavior();
+        else if (currentState == EnemyState.Frightened)
+            RunFrightenedBehavior();
+
+        else if (currentState == EnemyState.Eaten)
+            RunEatenBehavior();
     }
 
-    protected void EnemyShouldChasePlayer()
+    protected void CheckForPlayerToChase()
     {
         // Cuando el enemigo fue comido por el jugador o se encuentra huyendo, no realizamos ninguna acción.
-        if (state == EnemyState.Eaten || state == EnemyState.Frightened)
+        if (currentState == EnemyState.Eaten || currentState == EnemyState.Frightened)
             return;
 
-        // Verificamos la distancia entre el enemigo y el jugador, y actualizamos el estado en consecuencia.
+        // Finalmente, verificamos la distancia entre el enemigo y el jugador, y actualizamos el estado en consecuencia.
         // Si el mismo se encuentra en el rango de persecución, cambiamos el estado a Chase, y si no, a Scatter.
         var distanceToPlayer = Vector3.Distance(transform.position, playerCtrl.transform.position);
-        state = distanceToPlayer <= chaseRange ? EnemyState.Chase : EnemyState.Scatter;
+        currentState = distanceToPlayer <= chaseRange ? EnemyState.Chase : EnemyState.Scatter;
     }
 
     protected void HandleMovement(float speed)
@@ -122,6 +128,11 @@ public class EnemyController : MonoBehaviour
 
     protected void RunEatenBehavior()
     {
+        // Emitimos para notificar que el enemigo fue comido.
+        OnEnemyEaten?.Invoke(points);
+
+        // TODO: agregar la animación..
+
         // Seteamos el waypoint de destino
         targetWaypoint = homeEntranceWp;
 
@@ -135,10 +146,13 @@ public class EnemyController : MonoBehaviour
             // Si ya llegó al waypoint de entrada de la casa, nos movemos hacia el punto de origen.
             if (transform.position != homePlace.position)
             {
-                var dir = homePlace.position - transform.position;
-                transform.rotation = Quaternion.LookRotation(dir);
-                // Reducimos la velocidad de movimiento para lograr un efecto mas amigable.
-                transform.position += dir.normalized * frightenedSpeed * Time.deltaTime;
+                var distanceToHomePosition = Vector3.Distance(transform.position, homePlace.position);
+                if (distanceToHomePosition >= 0.1f)
+                {
+                    var dir = homePlace.position - transform.position;
+                    transform.rotation = Quaternion.LookRotation(dir);
+                    transform.position += dir.normalized * frightenedSpeed * Time.deltaTime;
+                }
             }
         }
     }
@@ -243,7 +257,53 @@ public class EnemyController : MonoBehaviour
         // pueda calcular un nuevo camino.
 
         targetWaypoint = null;
-        state = newState;
+        currentState = newState;
+    }
+
+    private void OnPowerPelletStatusChange(bool active)
+    {
+        // Cuando el enemigo fue comido por el jugador, no realizamos ninguna acción.
+        if (currentState == EnemyState.Eaten)
+            return;
+
+        // Este evento se dispara para notificar que el power pellet fue activado o desactivado.
+        // En ambos casos, debemos desactivar la corutina que se encarga de cambiar el color del enemigo
+        // cuando el power pellet está a punto de desaparecer. (ver OnPowerPelletFadeWarning)
+        if (changeColorOnPowerPelletFadeWarningCoroutine != null)
+            StopCoroutine(changeColorOnPowerPelletFadeWarningCoroutine);
+
+        // Finalmente, cambiamos el estado dependiendo de si el power pellet fue activado o desactivado.
+        ChangeState(active ? EnemyState.Frightened : EnemyState.Scatter);
+    }
+
+    private void OnPowerPelletFadeWarning()
+    {
+        // Este evento se dispara para notificar que quedan pocos segundos antes de que
+        // el power pellet desaparezca.
+        // En este punto, los enemigos pueden estar en 2 estados;
+        //
+        // - frightened: desde que el jugador activó el power pellet, el enemigo no ha sido comido.
+        // - eaten: el enemigo fue comido por el jugador.
+        //
+        // Entonces, en el único estado que nos interesa hacer algo es cuando el enemigo está huyendo,
+        // en cuyo caso, cambiamos su color hasta que el efecto del power pellet desaparezca.
+        if (currentState == EnemyState.Frightened)
+            changeColorOnPowerPelletFadeWarningCoroutine = StartCoroutine(PowerPelletFadeWarningFlashEffect());
+    }
+
+    protected IEnumerator PowerPelletFadeWarningFlashEffect()
+    {
+        // Este método se encarga de cambiar el color del material del enemigo
+        // para simular un efecto de parpadeo, una vez que el power pellet emite la notificación
+        // de alerta.
+        Color originalColor = frightenedMaterial.color;
+        while (true)
+        {
+            var t = Mathf.PingPong(Time.time * powerPelletFadeWarningFlashSpeed, powerPelletFadeWarningFlashDuration) / powerPelletFadeWarningFlashDuration;
+            frightenedMaterial.color = Color.Lerp(originalColor, Color.clear, t);
+
+            yield return null;
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -252,11 +312,11 @@ public class EnemyController : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             // Si el enemigo ya fue comido, no hacemos nada.
-            if (state == EnemyState.Eaten)
+            if (currentState == EnemyState.Eaten)
                 return;
 
             // Si el enemigo está huyendo, lo comemos.
-            if (state == EnemyState.Frightened)
+            if (currentState == EnemyState.Frightened)
                 ChangeState(EnemyState.Eaten);
         }
     }
