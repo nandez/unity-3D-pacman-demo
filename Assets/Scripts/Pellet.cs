@@ -5,9 +5,13 @@ using UnityEngine;
 public class Pellet : MonoBehaviour
 {
     [SerializeField] protected int points = 10;
+    [SerializeField] protected float rotationDegreesPerSecond = 180f;
+
+    [Header("Power Pellet Settings")]
     [SerializeField] protected bool isPowerPellet = false;
     [SerializeField] private float powerPelletBounceFrequency = 1.5f;
     [SerializeField] private float powerPelletBounceAmplitude = 0.15f;
+
 
     public int Points { get { return points; } }
     public bool IsPowerPellet { get { return isPowerPellet; } }
@@ -31,15 +35,14 @@ public class Pellet : MonoBehaviour
 
     void Start()
     {
-        // Si se trata de un power pellet, lo escalamos un poco para que se vea más grande.
-        if (isPowerPellet)
-            transform.localScale *= 1.1f;
-
         initialPosition = transform.position;
     }
 
     void Update()
     {
+        // Rotamos en el eje Y.
+        transform.Rotate(new Vector3(0f, Time.deltaTime * rotationDegreesPerSecond, 0f), Space.World);
+
         // Cuando se trata de un power pellet, le aplicamos un efecto de oscilación.
         if (isPowerPellet)
         {
