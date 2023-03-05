@@ -8,6 +8,8 @@ public class EnemyController : MonoBehaviour
 {
     [Header("Enemy Settings")]
     [SerializeField] protected int points = 200;
+    [SerializeField] Material material;
+    [SerializeField] Material frightenedMaterial;
 
     [Header("Movement Settings")]
     [SerializeField] protected Waypoint currentWaypoint;
@@ -18,7 +20,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] Waypoint homeEntranceWp;
     [SerializeField] Transform homePlace;
     [SerializeField] float homeWaitTime = 2f;
-    [SerializeField] Material frightenedMaterial;
+
     [SerializeField] protected float powerPelletFadeWarningFlashSpeed = 5f;
     [SerializeField] protected float powerPelletFadeWarningFlashDuration = 1f;
 
@@ -37,10 +39,10 @@ public class EnemyController : MonoBehaviour
     private PlayerController playerCtrl;
     private List<Waypoint> wpPath = new List<Waypoint>();
     private Waypoint targetWaypoint;
-    private Material defaultMaterial;
     private EnemyState currentState = EnemyState.Scatter;
     private Coroutine changeColorOnPowerPelletFadeWarningCoroutine;
-    private bool waitingInHome = false;
+    private bool waitingInHome = true;
+    private SkinnedMeshRenderer meshRenderer;
 
     public delegate void EnemyEatenEvent(int points);
     public static event EnemyEatenEvent OnEnemyEaten;
@@ -51,8 +53,9 @@ public class EnemyController : MonoBehaviour
         pathCtrl = new PathController();
         playerCtrl = FindObjectOfType<PlayerController>();
 
-        // Obtenemos el material por defecto del enemigo y lo guardamos.
-        defaultMaterial = GetComponent<Renderer>().material;
+        // Seteamos el material por defecto.
+        meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+        meshRenderer.material = material;
 
         // Dado que la velocidad del enemigo para cada estado
         // depende de la velocidad del jugador, la inicializamos en el Start.
@@ -165,7 +168,7 @@ public class EnemyController : MonoBehaviour
     protected void RunFrightenedBehavior()
     {
         // Cambiamos el material del enemigo para que se vea asustado.
-        GetComponent<Renderer>().material = frightenedMaterial;
+        meshRenderer.material = frightenedMaterial;
 
         Vector3 targetWaypointProjection;
         float targetWaypointDistance;
@@ -198,7 +201,7 @@ public class EnemyController : MonoBehaviour
     {
         // Restauramos el material del enemigo para cubrir los casos donde se transiciona
         // del estado frightened o eaten a scatter.
-        GetComponent<Renderer>().material = defaultMaterial;
+        meshRenderer.material = material;
 
         // Si el enemigo no está esperando en la casa, se mueve hacia un waypoint aleatorio del mapa.
         if (!waitingInHome)
@@ -255,7 +258,7 @@ public class EnemyController : MonoBehaviour
     {
         // Restauramos el material del enemigo para cubrir los casos donde se transiciona
         // del estado frightened o eaten a scatter.
-        GetComponent<Renderer>().material = defaultMaterial;
+        meshRenderer.material = material;
 
         // Seteamos el waypoint del jugador como el waypoint de destino.
         targetWaypoint = playerCtrl.GetWaypoint();
