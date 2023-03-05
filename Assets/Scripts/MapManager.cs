@@ -48,7 +48,7 @@ public class MapManager : MonoBehaviour
             if (wp.collectiblePrefab != null)
             {
                 var wpProjection = new Vector3(wp.transform.position.x, playerHeight, wp.transform.position.z);
-                var collectible = Instantiate(wp.collectiblePrefab, wpProjection, Quaternion.identity);
+                var collectible = Instantiate(wp.collectiblePrefab, wpProjection, wp.collectiblePrefab.transform.rotation);
                 collectible.transform.parent = pelletContainer.transform;
                 pellets.Add(collectible.GetComponent<Pellet>());
             }
