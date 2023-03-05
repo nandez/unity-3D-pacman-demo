@@ -330,10 +330,12 @@ public class EnemyController : MonoBehaviour
         // para simular un efecto de parpadeo, una vez que el power pellet emite la notificación
         // de alerta.
         Color originalColor = frightenedMaterial.color;
+        var newMaterial = new Material(frightenedMaterial);
         while (true)
         {
             var t = Mathf.PingPong(Time.time * powerPelletFadeWarningFlashSpeed, powerPelletFadeWarningFlashDuration) / powerPelletFadeWarningFlashDuration;
-            frightenedMaterial.color = Color.Lerp(originalColor, Color.clear, t);
+            newMaterial.color = Color.Lerp(originalColor, Color.clear, t);
+            meshRenderer.material = newMaterial;
 
             yield return null;
         }
