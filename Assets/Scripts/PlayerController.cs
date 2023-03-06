@@ -13,7 +13,8 @@ public class PlayerController : MonoBehaviour
     private bool isDead = false;
     private Vector3 movingDirection = Vector3.zero;
     private Vector3 inputDir = Vector3.zero;
-    private Transform startingTransform;
+    private Vector3 startingPosition;
+    private Quaternion startingRotation;
     private Waypoint startingWaypoint;
     private string currentAnimation = Constants.Player.IDLE_ANIMATION;
 
@@ -35,17 +36,29 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        startingTransform = transform;
+        // Guardamos la posición inicial del jugador y el waypoint en el que se encuentra.
         startingWaypoint = waypoint;
-    }
+        startingPosition = transform.position;
+        startingRotation = transform.rotation;
 
+        // Nos suscribimos al evento de reseteo de nivel para poder reiniciar el jugador.
+        GameManager.Instance.OnLevelReset += GameManager_OnLevelReset;
+    }
 
     void Update()
     {
+        // Verificamos el estado del jugador.
+        // Si fue comido por un fantasma, entonces verificamos si
+        // el jugador presiona una tecla de dirección para iniciar el juego.
+        // En dicho caso, la variable isDead queda en false.
+        CheckForDeadState();
+
+        // Si la flag está en true, entonces el jugador aún no ha presionado
+        // una tecla de dirección para iniciar el juego, por lo que no hacemos nada.
         if (isDead)
             return;
 
-        // Vamos a dividir el movimiento en dos partes:
+        // Llegado a este punto, vamos a dividir el movimiento en dos partes:
         //
         // 1.  Si el jugador no se está moviendo, obtenemos el input del usuario y lo procesamos
         //     para determinar la dirección del posible movimiento, verificando si existe un waypoint
@@ -54,6 +67,7 @@ public class PlayerController : MonoBehaviour
         // 2.  Si el jugador se está moviendo, verificamos si ya llegó al waypoint al cual se
         //     estaba moviendo y si es así, lo detenemos, para luego volver al paso 1.
 
+        // Verificamos el input del jugador.
         if (Input.GetKeyDown(KeyCode.UpArrow))
             inputDir = Vector3.forward;
 
@@ -137,34 +151,70 @@ public class PlayerController : MonoBehaviour
         // En este punto, nos interesa solamente la colisión con un enemigo
         // cuando el jugador no tiene un power pellet activo, dado que en ese
         // caso, el jugador pierde una vida.
-        if (other.gameObject.CompareTag("Enemy") && !GameManager.Instance.PowerPelletActive && !isDead)
+        if (other.gameObject.CompareTag("Enemy") && !GameManager.Instance.IsPowerPelletActive && !isDead)
         {
             isDead = true;
 
             currentAnimation = Constants.Player.DEATH_ANIMATION;
             playerAnimation.CrossFade(Constants.Player.DEATH_ANIMATION);
 
-            OnPlayerDeath?.Invoke();
-            Invoke(nameof(Reset), 1f);
+            // Emitimos el evento para notificar la muerte del jugador luego de un segundo.
+            // para permitir que la animación de muerte se reproduzca.
+            Invoke(nameof(EmitOnPlayerDeathEvent), 1f);
         }
     }
 
-    protected void Reset()
+    private void EmitOnPlayerDeathEvent()
     {
-        isDead = false;
+        OnPlayerDeath?.Invoke();
+    }
+
+    private void GameManager_OnLevelReset()
+    {
+        // Cuando se reinicia el nivel, el jugador debe volver a su estado inicial.
 
         // Reseteamos la animación
         currentAnimation = Constants.Player.IDLE_ANIMATION;
         playerAnimation.CrossFade(Constants.Player.IDLE_ANIMATION);
-
-        // Reseteamos la posición y rotación del jugador
-        transform.position = startingTransform.position;
-        transform.rotation = startingTransform.rotation;
 
         // Reiniciamos el waypoint y el estado de movimiento.
         waypoint = startingWaypoint;
         initialMoveDone = false;
         isMoving = false;
         inputDir = Vector3.zero;
+
+        // Reseteamos la posición y rotación del jugador
+        transform.position = startingPosition;
+        transform.rotation = startingRotation;
+    }
+
+    protected void CheckForDeadState()
+    {
+        // En este caso en particular, el jugador puede volver a la vida
+        // si presiona una tecla de dirección mientras está muerto y el juego
+        // se encuentra en estado Idle.
+        if (isDead && GameManager.Instance.GameState == GameState.Idle)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                inputDir = Vector3.forward;
+                isDead = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                inputDir = Vector3.back;
+                isDead = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                inputDir = Vector3.left;
+                isDead = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                inputDir = Vector3.right;
+                isDead = false;
+            }
+        }
     }
 }

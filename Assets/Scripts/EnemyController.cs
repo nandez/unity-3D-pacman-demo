@@ -19,7 +19,6 @@ public class EnemyController : MonoBehaviour
     [SerializeField] protected float chaseRange = 10f;
     [SerializeField] Waypoint homeEntranceWp;
     [SerializeField] Transform homePlace;
-    [SerializeField] float homeWaitTime = 2f;
 
     [SerializeField] protected float powerPelletFadeWarningFlashSpeed = 5f;
     [SerializeField] protected float powerPelletFadeWarningFlashDuration = 1f;
@@ -42,6 +41,7 @@ public class EnemyController : MonoBehaviour
     private EnemyState currentState = EnemyState.Scatter;
     private Coroutine changeColorOnPowerPelletFadeWarningCoroutine;
     private bool waitingInHome = true;
+    private Vector3 startingPosition;
     private SkinnedMeshRenderer meshRenderer;
 
     public delegate void EnemyEatenEvent(int points);
@@ -55,20 +55,29 @@ public class EnemyController : MonoBehaviour
 
         // Seteamos el material por defecto.
         meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
-        meshRenderer.material = material;
 
         // Dado que la velocidad del enemigo para cada estado
         // depende de la velocidad del jugador, la inicializamos en el Start.
         InitializeMovementSpeeds();
 
+        // Guardamos la posición inicial del enemigo.
+        startingPosition = transform.position;
+
+        // Nos suscribimos a los eventos del GameManager.
         GameManager.Instance.OnPowerPelletStatusChange += OnPowerPelletStatusChange;
         GameManager.Instance.OnPowerPelletFadeWarning += OnPowerPelletFadeWarning;
+        GameManager.Instance.OnLevelReset += OnLevelReset;
+
+        // Inicializamos el estado del enemigo.
+        OnLevelReset();
     }
-
-
 
     void Update()
     {
+        // Si el juego no está en estado Playing, no realizamos ninguna acción.
+        if (GameManager.Instance.GameState != GameState.Playing)
+            return;
+
         // Verificamos el estado del enemigo.
         CheckForPlayerToChase();
 
@@ -339,6 +348,28 @@ public class EnemyController : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    protected void OnLevelReset()
+    {
+        // Cuando se reinicia el nivel, el enemigo debe volver a su estado inicial.
+        Debug.Log("Resetting enemy " + name + "...");
+
+        // Asignamos / restauramos el material del enemigo.
+        meshRenderer.material = material;
+
+        // Reposicionamos el enemigo en su posición inicial.
+        transform.position = startingPosition;
+
+        // Seteamos el waypoint inicial.
+        targetWaypoint = homeEntranceWp;
+        currentWaypoint = homeEntranceWp;
+        wpPath.Clear();
+
+        // Especificamos que el enemigo está esperando en la casa.
+        // Esto es necesario para que el enemigo no se mueva hasta que el jugador
+        // comience a jugar, en cuyo caso se activa el estado scatter.
+        waitingInHome = true;
     }
 
     void OnTriggerEnter(Collider other)

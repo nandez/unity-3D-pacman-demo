@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] protected TextMeshProUGUI scoreText;
+    [SerializeField] protected List<GameObject> livesImages;
 
     [Header("Game Settings")]
     [SerializeField] protected float powerPelletEffectDuration = 19f;
@@ -28,9 +29,11 @@ public class GameManager : MonoBehaviour
     public event PowerPelletStatusChangeEvent OnPowerPelletStatusChange;
     public event PowerPelletFadeWarningEvent OnPowerPelletFadeWarning;
     private Coroutine powerPelletEffectDeactivateCoroutine;
+    public bool IsPowerPelletActive { get; private set; } = false;
     private int enemyEatenCounter = 0;
-    public bool PowerPelletActive { get; private set; } = false;
 
+    public delegate void OnLevelResetEvent();
+    public event OnLevelResetEvent OnLevelReset;
 
     void Awake()
     {
@@ -53,13 +56,14 @@ public class GameManager : MonoBehaviour
         Pellet.OnPelletCollected += Pellet_OnPelletCollected;
 
 
-        scoreText.SetText($"Score: {Score}");
+        scoreText.SetText(Score.ToString());
     }
 
 
 
     protected void ChangeState(GameState newState)
     {
+        Debug.Log($"Game State Changed: {GameState} -> {newState}");
         GameState = newState;
     }
 
@@ -75,20 +79,29 @@ public class GameManager : MonoBehaviour
     {
         if (PlayerLives - 1 <= 0)
         {
+            // Desactivamos todas las vidas y cambiamos el estado del juego a GameOver.
+            foreach (var lifeImage in livesImages)
+                lifeImage.SetActive(false);
+
             PlayerLives = 0;
             ChangeState(GameState.GameOver);
         }
         else
         {
+            // Restamos una vida y desactivamos la imagen de la UI.
             PlayerLives--;
+            livesImages[PlayerLives - 1].SetActive(false);
+
+            // Cambiamos el estado del juego a Idle y reiniciamos el nivel.
             ChangeState(GameState.Idle);
+            OnLevelReset?.Invoke();
         }
     }
 
     protected void Pellet_OnPelletCollected(Pellet pellet)
     {
         Score += pellet.Points;
-        scoreText.SetText($"Score: {Score}");
+        scoreText.SetText(Score.ToString());
 
         // Eliminamos el pellet de la lista de pellets y lo destruimos.
         MapManager.Instance.pellets.Remove(pellet);
@@ -101,7 +114,7 @@ public class GameManager : MonoBehaviour
         if (pellet.IsPowerPellet)
         {
             // Si el pellet es un power pellet, activamos el efecto y notificamos la activación.
-            PowerPelletActive = true;
+            IsPowerPelletActive = true;
             OnPowerPelletStatusChange?.Invoke(true);
 
             // En caso que el efecto este activo, cancelamos la corrutina que lo desactiva.
@@ -141,7 +154,7 @@ public class GameManager : MonoBehaviour
 
         // Esperamos el tiempo restante para desactivar el efecto y emitir el evento.
         yield return new WaitForSeconds(powerPelletEffectWarning);
-        PowerPelletActive = false;
+        IsPowerPelletActive = false;
         OnPowerPelletStatusChange?.Invoke(false);
         powerPelletEffectDeactivateCoroutine = null;
 

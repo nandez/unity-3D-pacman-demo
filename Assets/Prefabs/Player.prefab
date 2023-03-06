@@ -230,7 +230,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4788319935855200}
   - component: {fileID: 111495423891279680}
-  - component: {fileID: 114489361866395698}
   - component: {fileID: 1160853959}
   - component: {fileID: 1160853960}
   - component: {fileID: 1160853958}
@@ -278,18 +277,6 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
---- !u!114 &114489361866395698
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1713781036754730}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a8eeb9411d2d4e4180ec70be187c615, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &1160853959
 Rigidbody:
   m_ObjectHideFlags: 0
