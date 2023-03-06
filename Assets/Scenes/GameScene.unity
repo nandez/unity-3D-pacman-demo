@@ -5981,6 +5981,7 @@ GameObject:
   - component: {fileID: 321663626}
   - component: {fileID: 321663625}
   - component: {fileID: 321663624}
+  - component: {fileID: 321663628}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -6064,6 +6065,7 @@ RectTransform:
   - {fileID: 1980993940}
   - {fileID: 1443249768}
   - {fileID: 1639481563}
+  - {fileID: 1809148461}
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -6072,6 +6074,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &321663628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321663623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ead2d496e33d499429d2cbed7ae2a222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transition: {fileID: 1809148460}
+  transitionTime: 1
 --- !u!1001 &327290124
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38572,6 +38588,113 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: f8e3009d25ba9e845bc305e64672f8ba, type: 3}
   m_PrefabInstance: {fileID: 1808914681}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1809148459
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 321663627}
+    m_Modifications:
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3882411802489247799, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+      propertyPath: m_Name
+      value: FadeLayer
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+--- !u!95 &1809148460 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3882411802489247797, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+  m_PrefabInstance: {fileID: 1809148459}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1809148461 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3882411802489247796, guid: a001a2ff402b7694b8f5aac8ae0a3509, type: 3}
+  m_PrefabInstance: {fileID: 1809148459}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1813878353
 PrefabInstance:
