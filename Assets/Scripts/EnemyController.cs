@@ -353,8 +353,6 @@ public class EnemyController : MonoBehaviour
     protected void OnLevelReset()
     {
         // Cuando se reinicia el nivel, el enemigo debe volver a su estado inicial.
-        Debug.Log("Resetting enemy " + name + "...");
-
         // Asignamos / restauramos el material del enemigo.
         meshRenderer.material = material;
 

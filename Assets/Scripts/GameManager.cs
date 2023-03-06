@@ -63,7 +63,6 @@ public class GameManager : MonoBehaviour
 
     protected void ChangeState(GameState newState)
     {
-        Debug.Log($"Game State Changed: {GameState} -> {newState}");
         GameState = newState;
     }
 
@@ -139,9 +138,6 @@ public class GameManager : MonoBehaviour
         // 2 enemigos comidos = 400 puntos
         // 3 enemigos comidos = 800 puntos
         // 4 enemigos comidos = 1600 puntos
-        //
-        // Cuando el efecto desaparece, el contador vuelve a 0.
-
         Score += points * enemyEatenCounter;
     }
 

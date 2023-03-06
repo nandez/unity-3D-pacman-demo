@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour
             {
                 // Movemos al jugador en la dirección indicada.
                 transform.rotation = Quaternion.LookRotation(movingDirection);
-                transform.position += movingDirection * moveSpeed * Time.deltaTime;
+                transform.position = Vector3.MoveTowards(transform.position, wpProjection, moveSpeed * Time.deltaTime);
 
                 // Verificamos si es necesario cambiar la animación.
                 if (currentAnimation != Constants.Player.RUN_ANIMATION)
@@ -154,7 +154,6 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Enemy") && !GameManager.Instance.IsPowerPelletActive && !isDead)
         {
             isDead = true;
-
             currentAnimation = Constants.Player.DEATH_ANIMATION;
             playerAnimation.CrossFade(Constants.Player.DEATH_ANIMATION);
 
