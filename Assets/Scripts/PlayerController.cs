@@ -7,12 +7,15 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] protected float moveSpeed = 5f;
     [SerializeField] protected Waypoint waypoint;
+    [SerializeField] protected Animation playerAnimation;
 
     private bool isMoving = false;
+    private bool isDead = false;
     private Vector3 movingDirection = Vector3.zero;
     private Vector3 inputDir = Vector3.zero;
     private Transform startingTransform;
     private Waypoint startingWaypoint;
+    private string currentAnimation = Constants.Player.IDLE_ANIMATION;
 
     public Waypoint Waypoint
     {
@@ -39,6 +42,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (isDead)
+            return;
+
         // Vamos a dividir el movimiento en dos partes:
         //
         // 1.  Si el jugador no se está moviendo, obtenemos el input del usuario y lo procesamos
@@ -103,11 +109,25 @@ public class PlayerController : MonoBehaviour
             {
                 // Detenemos el movimiento.
                 isMoving = false;
+
+                if (currentAnimation != Constants.Player.IDLE_ANIMATION)
+                {
+                    currentAnimation = Constants.Player.IDLE_ANIMATION;
+                    playerAnimation.CrossFade(Constants.Player.IDLE_ANIMATION);
+                }
             }
             else
             {
                 // Movemos al jugador en la dirección indicada.
+                transform.rotation = Quaternion.LookRotation(movingDirection);
                 transform.position += movingDirection * moveSpeed * Time.deltaTime;
+
+                // Verificamos si es necesario cambiar la animación.
+                if (currentAnimation != Constants.Player.RUN_ANIMATION)
+                {
+                    currentAnimation = Constants.Player.RUN_ANIMATION;
+                    playerAnimation.CrossFade(Constants.Player.RUN_ANIMATION);
+                }
             }
         }
     }
@@ -117,15 +137,26 @@ public class PlayerController : MonoBehaviour
         // En este punto, nos interesa solamente la colisión con un enemigo
         // cuando el jugador no tiene un power pellet activo, dado que en ese
         // caso, el jugador pierde una vida.
-        if (other.gameObject.CompareTag("Enemy") && !GameManager.Instance.PowerPelletActive)
+        if (other.gameObject.CompareTag("Enemy") && !GameManager.Instance.PowerPelletActive && !isDead)
         {
+            isDead = true;
+
+            currentAnimation = Constants.Player.DEATH_ANIMATION;
+            playerAnimation.CrossFade(Constants.Player.DEATH_ANIMATION);
+
             OnPlayerDeath?.Invoke();
-            Reset();
+            Invoke(nameof(Reset), 1f);
         }
     }
 
     protected void Reset()
     {
+        isDead = false;
+
+        // Reseteamos la animación
+        currentAnimation = Constants.Player.IDLE_ANIMATION;
+        playerAnimation.CrossFade(Constants.Player.IDLE_ANIMATION);
+
         // Reseteamos la posición y rotación del jugador
         transform.position = startingTransform.position;
         transform.rotation = startingTransform.rotation;
@@ -134,5 +165,6 @@ public class PlayerController : MonoBehaviour
         waypoint = startingWaypoint;
         initialMoveDone = false;
         isMoving = false;
+        inputDir = Vector3.zero;
     }
 }
