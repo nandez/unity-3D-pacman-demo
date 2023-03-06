@@ -10,7 +10,7 @@ public class Waypoint : MonoBehaviour
     public bool isBlocked;
     public List<Waypoint> neighbors = new List<Waypoint>();
     public Waypoint previousWaypoint;
-
+    public bool isPortal;
 
     /// <summary>
     /// En el algoritmo A*, G es la distancia desde el punto de inicio hasta el punto actual.

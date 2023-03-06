@@ -261,7 +261,7 @@ public class EnemyController : MonoBehaviour
         meshRenderer.material = material;
 
         // Seteamos el waypoint del jugador como el waypoint de destino.
-        targetWaypoint = playerCtrl.GetWaypoint();
+        targetWaypoint = playerCtrl.Waypoint;
 
         // Movemos al enemigo hacia el waypoint del jugador.
         HandleMovement(chaseSpeed);

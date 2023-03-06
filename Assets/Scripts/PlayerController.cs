@@ -14,7 +14,12 @@ public class PlayerController : MonoBehaviour
     private Transform startingTransform;
     private Waypoint startingWaypoint;
 
-    public Waypoint GetWaypoint() => waypoint;
+    public Waypoint Waypoint
+    {
+        get { return waypoint; }
+        set { waypoint = value; }
+    }
+
     public float GetMoveSpeed() => moveSpeed;
 
     public delegate void InitialMoveEvent();

@@ -33,8 +33,18 @@ public class PathController
                     continue;
 
                 // Calculamos los valores de G y H para el nodo adyacente.
-                neighbor.g = CalculateManhattanDistance(start, neighbor);
-                neighbor.h = CalculateManhattanDistance(end, neighbor);
+                if (currentWaypoint.isPortal && neighbor.isPortal)
+                {
+                    // Si ambos waypoints son portales, no se suma nada a G y H.
+                    neighbor.g = 0;
+                    neighbor.h = 0;
+                }
+                else
+                {
+                    neighbor.g = CalculateManhattanDistance(start, neighbor);
+                    neighbor.h = CalculateManhattanDistance(end, neighbor);
+                }
+
                 neighbor.previousWaypoint = currentWaypoint;
 
                 if (!openList.Contains(neighbor))
@@ -47,7 +57,8 @@ public class PathController
     }
 
     /// <summary>
-    /// La Distancia Manhattan es el total de los valores absolutos de las discrepancias entre las coordenadas x e y de las celdas actual y objetivo.
+    /// La Distancia Manhattan es el total de los valores absolutos de las discrepancias entre las coordenadas "x"
+    /// e "y" de las celdas actual y objetivo.
     /// </summary>
     protected int CalculateManhattanDistance(Waypoint a, Waypoint b)
     {

@@ -60,6 +60,9 @@ public class MapManager : MonoBehaviour
         // solo se realiza una vez al inicio del juego.
         // 1. Creamos un diccionario que nos permita acceder a los waypoints por su posición en la grilla.
         // 2. Iteramos sobre todos los waypoints del mapa y calculamos sus waypoints adyacentes.
+        //
+        // NOTA: Los waypoints que representan las zonas de teletransporte, ya tiene pre-cargadas sus respectivas
+        //       entradas y salidas como waypoints adyacentes.
         var waypointDictionary = waypoints.ToDictionary(t => t.gridPosition, t => t);
         foreach (var wp in waypoints)
         {
