@@ -138,12 +138,14 @@ public class GameManager : MonoBehaviour
         scoreText.SetText(Score.ToString());
 
         // Eliminamos el pellet de la lista de pellets y lo destruimos.
-        MapManager.Instance.pellets.Remove(pellet);
-        Destroy(pellet.gameObject);
+        MapManager.Instance.DestroyPellet(pellet);
 
         // Si no quedan mas pellets, el nivel está completo.
-        if (MapManager.Instance.pellets.Count == 0)
+        if (MapManager.Instance.RemainingPellets == 0)
         {
+            Debug.Log("pellet complete");
+
+            // Cambiamos el estado del juego a LevelCompleted.
             ChangeState(GameState.LevelCompleted);
 
             // Mostramos el menu de nivel completo

@@ -10,8 +10,10 @@ public class MapManager : MonoBehaviour
 
     public List<Waypoint> waypoints = new List<Waypoint>();
     public List<Waypoint> corners = new List<Waypoint>();
-    public List<Pellet> pellets = new List<Pellet>();
+
     [SerializeField] protected GameObject pelletContainer;
+    private List<Pellet> pellets = new List<Pellet>();
+    public int RemainingPellets { get { return pellets.Count; } }
 
     [SerializeField] protected int waypointStep = 2;
     public int WaypointStep { get { return waypointStep; } }
@@ -107,5 +109,11 @@ public class MapManager : MonoBehaviour
     public Waypoint GetRandomCornerWaypoint()
     {
         return corners[Random.Range(0, corners.Count)];
+    }
+
+    public void DestroyPellet(Pellet pellet)
+    {
+        pellets.Remove(pellet);
+        Destroy(pellet.gameObject);
     }
 }
