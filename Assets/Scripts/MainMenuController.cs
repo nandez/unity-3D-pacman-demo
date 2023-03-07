@@ -6,7 +6,7 @@ public class MainMenuController : MonoBehaviour
 
     public void StartGame()
     {
-        levelTransitionCtrl.LoadScene("GameScene");
+        levelTransitionCtrl.LoadScene(Constants.SceneNames.GAME_SCENE);
     }
 
     public void ExitGame()

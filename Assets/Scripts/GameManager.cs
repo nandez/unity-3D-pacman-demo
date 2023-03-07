@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,13 +13,20 @@ public class GameManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] protected TextMeshProUGUI scoreText;
     [SerializeField] protected List<GameObject> livesImages;
+    [SerializeField] protected LevelTransitionController levelTransitionCtrl;
+    [SerializeField] protected GameObject gameMenu;
+    [SerializeField] protected TextMeshProUGUI gameMenuTitleText;
+    [SerializeField] protected TextMeshProUGUI playButtonText;
+
 
     [Header("Game Settings")]
     [SerializeField] protected float powerPelletEffectDuration = 19f;
     [SerializeField] protected float powerPelletEffectWarning = 12f;
 
 
+
     public GameState GameState { get; private set; } = GameState.Idle;
+    private GameState gameStatePriorPause = GameState.Idle;
     public int PlayerLives { get; private set; } = 3;
     public int Score { get; private set; } = 0;
 
@@ -59,7 +67,29 @@ public class GameManager : MonoBehaviour
         scoreText.SetText(Score.ToString());
     }
 
-
+    void Update()
+    {
+        // Podemos acceder al menu de pausa durante la partida.
+        if (Input.GetKeyDown(KeyCode.Escape) && GameState != GameState.GameOver && GameState != GameState.LevelCompleted)
+        {
+            // Verificamos si el juego está pausado o no.
+            if (GameState == GameState.Paused)
+            {
+                // Si el juego estaba pausado, entonces lo reanudamos.
+                ChangeState(gameStatePriorPause);
+                gameMenu.SetActive(false);
+            }
+            else
+            {
+                // Si el juego no estaba pausado, entonces lo pausamos.
+                gameStatePriorPause = GameState;
+                ChangeState(GameState.Paused);
+                gameMenuTitleText.SetText("GAME PAUSED");
+                playButtonText.SetText("Resume");
+                gameMenu.SetActive(true);
+            }
+        }
+    }
 
     protected void ChangeState(GameState newState)
     {
@@ -84,6 +114,11 @@ public class GameManager : MonoBehaviour
 
             PlayerLives = 0;
             ChangeState(GameState.GameOver);
+
+            // Mostramos el menu de Game Over.
+            gameMenuTitleText.SetText("GAME OVER");
+            playButtonText.SetText("Restart");
+            gameMenu.SetActive(true);
         }
         else
         {
@@ -108,7 +143,16 @@ public class GameManager : MonoBehaviour
 
         // Si no quedan mas pellets, el nivel está completo.
         if (MapManager.Instance.pellets.Count == 0)
+        {
             ChangeState(GameState.LevelCompleted);
+
+            // Mostramos el menu de nivel completo
+            gameMenuTitleText.SetText("LEVEL COMPLETE");
+            playButtonText.SetText("Restart");
+            gameMenu.SetActive(true);
+            return;
+        }
+
 
         if (pellet.IsPowerPellet)
         {
@@ -157,12 +201,33 @@ public class GameManager : MonoBehaviour
         // Cuando se desactiva el efecto, reiniciamos el contador de enemigos comidos.
         enemyEatenCounter = 0;
     }
+
+    public void OnPlayGameClick()
+    {
+        // Si el juego se encuentra en estado gameover o win, reiniciamos el nivel.
+        // de lo contrario, simplemente restauramos la escala de tiempo.
+        if (GameState == GameState.GameOver || GameState == GameState.LevelCompleted)
+        {
+            levelTransitionCtrl.LoadScene(SceneManager.GetActiveScene().name);
+        }
+        else
+        {
+            gameMenu.SetActive(false);
+            ChangeState(gameStatePriorPause);
+        }
+    }
+
+    public void OnBackToMainMenuClick()
+    {
+        levelTransitionCtrl.LoadScene(Constants.SceneNames.MENU_SCENE);
+    }
 }
 
 public enum GameState
 {
     Idle,
     Playing,
+    Paused,
     GameOver,
     LevelCompleted
 }

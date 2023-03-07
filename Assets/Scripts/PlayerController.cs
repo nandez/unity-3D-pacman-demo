@@ -47,6 +47,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Verificamos el estado del juego.
+        if (GameManager.Instance.GameState != GameState.Idle &&
+           GameManager.Instance.GameState != GameState.Playing)
+            return;
+
         // Verificamos el estado del jugador.
         // Si fue comido por un fantasma, entonces verificamos si
         // el jugador presiona una tecla de dirección para iniciar el juego.

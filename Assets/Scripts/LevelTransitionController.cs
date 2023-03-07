@@ -18,6 +18,6 @@ public class LevelTransitionController : MonoBehaviour
     {
         transition.SetTrigger("Start");
         yield return new WaitForSeconds(transitionTime);
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene(sceneName);
     }
 }

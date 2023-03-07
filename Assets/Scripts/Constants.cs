@@ -11,4 +11,10 @@ public static class Constants
         public const string DEATH_ANIMATION = "Anim_Death";
     }
 
+    public static class SceneNames
+    {
+        public const string MENU_SCENE = "MenuScene";
+        public const string GAME_SCENE = "GameScene";
+    }
+
 }
