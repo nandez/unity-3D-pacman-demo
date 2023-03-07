@@ -27,11 +27,11 @@ public class PlayerController : MonoBehaviour
     public float GetMoveSpeed() => moveSpeed;
 
     public delegate void InitialMoveEvent();
-    public static event InitialMoveEvent OnPlayerInitialMove;
+    public event InitialMoveEvent OnPlayerInitialMove;
     private bool initialMoveDone = false;
 
     public delegate void OnPlayerDeathEvent();
-    public static event OnPlayerDeathEvent OnPlayerDeath;
+    public event OnPlayerDeathEvent OnPlayerDeath;
 
 
     void Start()

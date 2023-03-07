@@ -52,7 +52,11 @@ public class MapManager : MonoBehaviour
                 var wpProjection = new Vector3(wp.transform.position.x, playerHeight, wp.transform.position.z);
                 var collectible = Instantiate(wp.collectiblePrefab, wpProjection, wp.collectiblePrefab.transform.rotation);
                 collectible.transform.parent = pelletContainer.transform;
-                pellets.Add(collectible.GetComponent<Pellet>());
+
+                // Seteamos el handler para el evento OnPelletCollected del pellet.
+                var pelletComponent = collectible.GetComponent<Pellet>();
+                pelletComponent.OnPelletCollected += GameManager.Instance.Pellet_OnPelletCollected;
+                pellets.Add(pelletComponent);
             }
         }
 

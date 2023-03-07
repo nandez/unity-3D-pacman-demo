@@ -25,8 +25,8 @@ public class GameManager : MonoBehaviour
 
 
 
-    public GameState GameState { get; private set; } = GameState.Idle;
-    private GameState gameStatePriorPause = GameState.Idle;
+    public GameState GameState { get; private set; }
+    private GameState gameStatePriorPause;
     public int PlayerLives { get; private set; } = 3;
     public int Score { get; private set; } = 0;
 
@@ -43,6 +43,9 @@ public class GameManager : MonoBehaviour
     public delegate void OnLevelResetEvent();
     public event OnLevelResetEvent OnLevelReset;
 
+    private PlayerController playerController;
+
+
     void Awake()
     {
         if (_instance != null && _instance != this)
@@ -57,12 +60,21 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Seteamos los handlers para los eventos
-        PlayerController.OnPlayerInitialMove += PlayerController_OnPlayerInitialMove;
-        PlayerController.OnPlayerDeath += PlayerController_OnPlayerDeath;
-        EnemyController.OnEnemyEaten += EnemyController_OnEnemyEaten;
-        Pellet.OnPelletCollected += Pellet_OnPelletCollected;
+        // Obtenemos el componente PlayerController.
+        playerController = FindObjectOfType<PlayerController>();
 
+        // Seteamos los handlers para los eventos
+        playerController.OnPlayerInitialMove += PlayerController_OnPlayerInitialMove;
+        playerController.OnPlayerDeath += PlayerController_OnPlayerDeath;
+
+        // Obtenemos todos los enemigos y seteamos el handler para el evento OnEnemyEaten.
+        var enemies = FindObjectsOfType<EnemyController>();
+        foreach (var enemy in enemies)
+            enemy.OnEnemyEaten += EnemyController_OnEnemyEaten;
+
+        // Iniciamos el juego.
+        GameState = GameState.Idle;
+        gameStatePriorPause = GameState;
 
         scoreText.SetText(Score.ToString());
     }
@@ -132,7 +144,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    protected void Pellet_OnPelletCollected(Pellet pellet)
+    public void Pellet_OnPelletCollected(Pellet pellet)
     {
         Score += pellet.Points;
         scoreText.SetText(Score.ToString());

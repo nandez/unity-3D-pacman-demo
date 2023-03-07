@@ -45,7 +45,7 @@ public class EnemyController : MonoBehaviour
     private SkinnedMeshRenderer meshRenderer;
 
     public delegate void EnemyEatenEvent(int points);
-    public static event EnemyEatenEvent OnEnemyEaten;
+    public event EnemyEatenEvent OnEnemyEaten;
 
     void Start()
     {

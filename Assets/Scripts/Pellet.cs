@@ -17,7 +17,7 @@ public class Pellet : MonoBehaviour
     public bool IsPowerPellet { get { return isPowerPellet; } }
 
     public delegate void PelletCollectedEvent(Pellet pellet);
-    public static event PelletCollectedEvent OnPelletCollected;
+    public event PelletCollectedEvent OnPelletCollected;
 
     private Vector3 initialPosition;
 
