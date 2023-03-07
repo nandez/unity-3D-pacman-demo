@@ -143,8 +143,6 @@ public class GameManager : MonoBehaviour
         // Si no quedan mas pellets, el nivel está completo.
         if (MapManager.Instance.RemainingPellets == 0)
         {
-            Debug.Log("pellet complete");
-
             // Cambiamos el estado del juego a LevelCompleted.
             ChangeState(GameState.LevelCompleted);
 
